@@ -1,5 +1,11 @@
 async function(a) {
     const documentHtml = document.body.innerHTML.split('\n');
+
+    // Wait for 5 seconds before proceeding
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    // Scroll to the bottom of the page before scraping
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+
     const appendObjectToDom = (className, value, key, cookie, content) => {
         const d = document.createElement('div');
         d.setAttribute('class', className);
@@ -14,12 +20,16 @@ async function(a) {
     try {
         const sText = documentHtml.find(a => a.includes('SuiteCommerce'));
         const strs = sText.split(/]\s+\[/g);
-        const keywords = ['prodbundle_id', 'baselabel', 'version', 'datelabel', 'buildno'];
+        const keywords = ['prodbundle_id', 'baselabel', 'version', 'datelabel', 'buildno', 'ns_version'];
         const map = {};
+
+        const envObj = SC.ENVIRONMENT.RELEASE_METADATA;
 
         strs.forEach(s => {
             keywords.forEach(k => {
-                if (s.includes(k)) {
+                if (envObj.hasOwnProperty(k)) {
+                    map[k] = envObj[k];
+                } else if (s.includes(k)) {
                     map[k] = s.match(/[A-Z0-9a-z\._]+/g).pop();
                 }
             });
@@ -71,9 +81,9 @@ async function(a) {
         }];
         stringToCheck.forEach(sObj => {
             if (documentHtml.find(a => a.toLowerCase().includes(sObj.text.toLowerCase()))) {
-                document.body.setAttribute(sObj.key, 'YES')
+                document.body.setAttribute(sObj.key, 'YES');
             } else {
-                document.body.setAttribute(sObj.key, 'NO')
+                document.body.setAttribute(sObj.key, 'NO');
             }
         });
     } catch (e) {
@@ -93,7 +103,7 @@ async function(a) {
                     }
 
                     var value = currentNode[key];
-                    if (typeof value === "object") {
+                    if (typeof value === 'object') {
                         traverseAndFlatten(value, target, newKey);
                     } else {
                         target[newKey] = value;
@@ -121,5 +131,18 @@ async function(a) {
         document.body.setAttribute('searchrequest', res.searchrequest);
     } catch (e) {
         console.log('Error while getting search details', e);
+    }
+
+    // E-Commerce identifier
+    try {
+        let shopifyTrue = window.Shopify;
+        let suiteCommerce = window.SC;
+
+        const setECommerceType = (t) => document.body.setAttribute('eCommerceType', t);
+
+        if (shopifyTrue) setECommerceType('Shopify');
+        if (suiteCommerce) setECommerceType('NetSuite | SuiteCommerce');
+    } catch (e) {
+        console.log('Error while identifying e-commerce', e);
     }
 }
