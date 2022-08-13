@@ -62,10 +62,12 @@ async function(a) {
         const stringToCheck = [{
             key: 'gotResponseFromPrerender',
             text: 'Got a response from Prerender'
-        },
-        {
+        }, {
             key: 'Governance',
             text: 'The governance null limit was reached'
+        }, {
+            key: 'SSPAppContext',
+            text: 'SSPAppContext'
         }];
         stringToCheck.forEach(sObj => {
             if (documentHtml.find(a => a.toLowerCase().includes(sObj.text.toLowerCase()))) {
@@ -109,7 +111,7 @@ async function(a) {
         const searchTerm = 'black';
         const searchUrl = `https://${host}/api/items?country=${country || combination.country || 'US'}&&fieldset=search&language=${combination.language || 'en'}&limit=10&offset=0&q=${searchTerm}&ssdebug=T`;
         const res = await fetch(searchUrl).then(r => r.json());
-        
+
         const flattenedObject = {};
         traverseAndFlatten(res.perftiming || {}, flattenedObject);
         Object.keys(flattenedObject).forEach(fo => {
