@@ -18,7 +18,7 @@ async function(a) {
 
     // Parse SuiteCommerce data
     try {
-        const sText = documentHtml.find(a => a.includes('SuiteCommerce'));
+        const sText = documentHtml.find(a => a.includes('SuiteCommerce') && a.trim().startsWith('<!--'));
         const strs = sText.split(/]\s+\[/g);
         const keywords = ['prodbundle_id', 'baselabel', 'version', 'datelabel', 'buildno', 'ns_version'];
         const map = {};
@@ -27,7 +27,7 @@ async function(a) {
 
         strs.forEach(s => {
             keywords.forEach(k => {
-                if (envObj.hasOwnProperty(k)) {
+                if (envObj && envObj.hasOwnProperty(k)) {
                     map[k] = envObj[k];
                 } else if (s.includes(k)) {
                     map[k] = s.match(/[A-Z0-9a-z\._]+/g).pop();
