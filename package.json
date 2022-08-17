@@ -1,0 +1,23 @@
+{
+  "name": "diego_ecommerce_scraping",
+  "version": "1.0.0",
+  "description": "Post process CSV output from import for eCommerce websites",
+  "main": "inputs_generator.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/manasnilarout/diego_eCommerce_scraping.git"
+  },
+  "author": "Manas Nilorout",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/manasnilarout/diego_eCommerce_scraping/issues"
+  },
+  "homepage": "https://github.com/manasnilarout/diego_eCommerce_scraping#readme",
+  "dependencies": {
+    "csv-writer": "^1.6.0",
+    "csvtojson": "^2.0.10"
+  }
+}
