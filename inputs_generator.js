@@ -12,8 +12,8 @@ const main = async () => {
     const records = await csv()
         .fromFile('./inputs.csv')
         .then((jsonObj) => {
-            jsonObj.forEach(j => {
-                j.URL = j.URL + `?seodebug=T&preview=${new Date().getTime()}`
+            jsonObj.forEach((j, i) => {
+                j.URL = j.URL + `?seodebug=T&preview=${new Date().getTime()}${i}`
             });
             return jsonObj;
         });
