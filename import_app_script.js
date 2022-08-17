@@ -86,8 +86,49 @@ async function(a) {
                 document.body.setAttribute(sObj.key, 'NO');
             }
         });
+
+        document.body.setAttribute('companyId', window.SC.ENVIRONMENT.companyId);
     } catch (e) {
         console.log('Error while parsing generic stuff', e);
+    }
+
+    // Pull console.log elements
+    try {
+        const debugOP = Array.from(document.body.childNodes).filter(el => el.nodeName === '#comment').find(el => el.textContent.includes('Debug output:'));
+        const text = debugOP.textContent;
+        const lines = text.split('\n');
+        const has404Status = lines.find(l => l.includes('[status 404]') || l.includes('[status 400]'));
+        if (has404Status) {
+            document.body.setAttribute('SubRequests', 'Not Ok');
+        } else {
+            document.body.setAttribute('SubRequests', 'OK');
+        }
+
+        const allRequests = lines.map(l => l.trim()).filter(l => l.match(/\[status \d{3}\]/g));
+        document.body.setAttribute('backgroundRequests', allRequests.join(';'));
+
+        let starsDetected = false;
+        let isFirstOccurance = false;
+        let isSecondOccurance = false;
+        let consoleString = '';
+        lines.forEach(l => {
+            if (!starsDetected && l.includes('***') && !isSecondOccurance) {
+                starsDetected = true;
+                isFirstOccurance = true;
+            }
+
+            if (starsDetected) {
+                consoleString += l + '\n';
+                if (l.includes('***') && !isFirstOccurance) {
+                    starsDetected = false;
+                    isSecondOccurance = true;
+                }
+            }
+        });
+
+        document.body.setAttribute('consoleContent', consoleString);
+    } catch (e) {
+        console.log('Error while pulling console.log elements', e);
     }
 
     // Get Item Search details
@@ -137,6 +178,25 @@ async function(a) {
     try {
         let shopifyTrue = window.Shopify;
         let suiteCommerce = window.SC;
+
+        if (window.location.protocol.includes('s')) {
+            document.body.setAttribute('isHttpS', 'Yes');
+        } else {
+            document.body.setAttribute('isHttpS', 'No');
+        }
+
+        const url = 'https://' + window.location.host.replace('www.', '');
+        document.body.setAttribute('cNameTestWithUrl', url);
+
+        await fetch(url)
+            .then(res => {
+                console.log('FETCH', res);
+                document.body.setAttribute('isCNameProperlyMapped', 'Yes');
+            })
+            .catch(e => {
+                console.log('Fetch with https to host without www failed', e);
+                document.body.setAttribute('isCNameProperlyMapped', 'No');
+            });
 
         const setECommerceType = (t) => document.body.setAttribute('eCommerceType', t);
 
