@@ -13,12 +13,10 @@ const main = async () => {
         .fromFile('./inputs.csv')
         .then((jsonObj) => {
             jsonObj.forEach((j, i) => {
-                j.URL = j.URL + `?seodebug=T&preview=${new Date().getTime()}${i}`
+                j.URL = j.URL + `?seodebug=T&preview=${new Date().getTime()}${i}`;
             });
             return jsonObj;
         });
-
-
 
     await csvWriter
         .writeRecords(records)

@@ -166,6 +166,7 @@ async function(a) {
         const flattenedObject = {};
         traverseAndFlatten(res.perftiming || {}, flattenedObject);
         Object.keys(flattenedObject).forEach(fo => {
+            if (fo === 'sqltime') document.body.setAttribute('sqltime', flattenedObject[fo]);
             appendObjectToDom('perfTiming', flattenedObject[fo], fo, null, `${fo}:${flattenedObject[fo]}`);
         });
 
@@ -204,5 +205,34 @@ async function(a) {
         if (suiteCommerce) setECommerceType('NetSuite | SuiteCommerce');
     } catch (e) {
         console.log('Error while identifying e-commerce', e);
+    }
+
+    try {
+        let isRobotsPagePresent = 'No';
+        let isSiteMapLinkPresentInRobotsPage = 'No';
+        let sitemapLink = '-';
+        let isSitemapLinkFunctional = 'No';
+        await fetch('/robots.txt').then(res => res.text()).then(async rt => {
+            isRobotsPagePresent = 'Yes';
+            if (rt.includes('Sitemap:')) {
+                isSiteMapLinkPresentInRobotsPage = 'Yes';
+                const regEx = /Sitemap:\s(\w.+)$/g;
+                console.log(rt);
+                if (regEx.test(rt)) {
+                    sitemapLink = rt.match(regEx)[0].replace(regEx, '$1');
+                    console.log(`Sitemap link => ${sitemapLink}`);
+                    await fetch(sitemapLink).then(r => r.text()).then(r => {
+                        isSitemapLinkFunctional = 'Yes';
+                    });
+                }
+            }
+        }).finally(() => {
+            document.body.setAttribute('isRobotsPagePresent', isRobotsPagePresent);
+            document.body.setAttribute('isSiteMapLinkPresentInRobotsPage', isSiteMapLinkPresentInRobotsPage);
+            document.body.setAttribute('sitemapLink', sitemapLink);
+            document.body.setAttribute('isSitemapLinkFunctional', isSitemapLinkFunctional);
+        });
+    } catch (err) {
+        console.log(`Something went wrong while reading robot details/getting sitemap details.`, err);
     }
 }
