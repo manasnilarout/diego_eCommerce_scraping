@@ -135,7 +135,7 @@ async function(a) {
             }
 
             if (l.includes('*** All requested URLs with headers (begin)')) {
-                errStart = true;
+                errStart = false;
             }
 
             if (errStart) {
