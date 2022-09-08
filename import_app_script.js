@@ -81,12 +81,16 @@ async function(a) {
         }];
         stringToCheck.forEach(sObj => {
             if (documentHtml.find(a => a.toLowerCase().includes(sObj.text.toLowerCase()))) {
-                document.body.setAttribute(sObj.key, 'YES');
+                document.body.setAttribute(sObj.key, 'Yes');
             } else {
-                document.body.setAttribute(sObj.key, 'NO');
+                document.body.setAttribute(sObj.key, 'No');
             }
         });
 
+        const gotRespFromPreText = documentHtml.find(a => a.includes(stringToCheck[0].text));
+        const gotResponseFromPrerenderTime = gotRespFromPreText ? gotRespFromPreText.replace(/.*\[\s{1,}.(\d+)\s{1,}(ms|MS)\s{1,}\].*/, '$1'): '0';
+
+        document.body.setAttribute('gotResponseFromPrerenderTime', gotResponseFromPrerenderTime);
         document.body.setAttribute('companyId', window.SC.ENVIRONMENT.companyId);
     } catch (e) {
         console.log('Error while parsing generic stuff', e);
