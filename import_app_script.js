@@ -88,7 +88,7 @@ async function(a) {
         });
 
         const gotRespFromPreText = documentHtml.find(a => a.includes(stringToCheck[0].text));
-        const gotResponseFromPrerenderTime = gotRespFromPreText ? gotRespFromPreText.replace(/.*\[\s{1,}.(\d+)\s{1,}(ms|MS)\s{1,}\].*/, '$1'): '0';
+        const gotResponseFromPrerenderTime = gotRespFromPreText ? gotRespFromPreText.replace(/.*\[\s{1,}.(\d+)\s{1,}(ms|MS)\s{1,}\].*/, '$1') : '0';
 
         document.body.setAttribute('gotResponseFromPrerenderTime', gotResponseFromPrerenderTime);
         document.body.setAttribute('companyId', window.SC.ENVIRONMENT.companyId);
@@ -192,7 +192,7 @@ async function(a) {
             appendObjectToDom('perfTiming', flattenedObject[fo], fo, null, `${fo}:${flattenedObject[fo]}`);
         });
 
-        document.body.setAttribute('searchrequest', res.searchrequest);
+        document.body.setAttribute('searchrequest', res.searchrequest || '-');
     } catch (e) {
         console.log('Error while getting search details', e);
     }
@@ -234,8 +234,21 @@ async function(a) {
         let isSiteMapLinkPresentInRobotsPage = 'No';
         let sitemapLink = '-';
         let isSitemapLinkFunctional = 'No';
+        let sitemapOrigin = '-';
+        let robotsPageContent = '-';
+
+        const validateSitemapLink = async (l) => {
+            const res = await fetch(l).catch(console.log);
+            if (res.status === 200) {
+                sitemapLink = l;
+                return 'Yes';
+            }
+            return 'No';
+        };
+
         await fetch('/robots.txt').then(res => res.text()).then(async rt => {
             isRobotsPagePresent = 'Yes';
+            robotsPageContent = rt;
             if (rt.includes('Sitemap:')) {
                 isSiteMapLinkPresentInRobotsPage = 'Yes';
                 const regEx = /Sitemap:\s(\w.+)$/g;
@@ -243,18 +256,90 @@ async function(a) {
                 if (regEx.test(rt)) {
                     sitemapLink = rt.match(regEx)[0].replace(regEx, '$1');
                     console.log(`Sitemap link => ${sitemapLink}`);
-                    await fetch(sitemapLink).then(r => r.text()).then(r => {
-                        isSitemapLinkFunctional = 'Yes';
-                    });
+                    sitemapOrigin = 'External';
+                    isSitemapLinkFunctional = 'Yes';
                 }
             }
         }).finally(() => {
             document.body.setAttribute('isRobotsPagePresent', isRobotsPagePresent);
+            document.body.setAttribute('robotsPageContent', robotsPageContent);
             document.body.setAttribute('isSiteMapLinkPresentInRobotsPage', isSiteMapLinkPresentInRobotsPage);
-            document.body.setAttribute('sitemapLink', sitemapLink);
-            document.body.setAttribute('isSitemapLinkFunctional', isSitemapLinkFunctional);
         });
+
+        // Attempts to check if sitemap is present somewhere
+        if (sitemapLink === '-') {
+            const customLink = `https://${window.location.host}/sitemap_${window.location.host}_Index.xml`;
+            console.log(`Attempting to find sitemap at -> "${customLink}"`);
+            isSitemapLinkFunctional = await validateSitemapLink(customLink);
+            if (isSitemapLinkFunctional === 'Yes') sitemapOrigin = 'NetSuite';
+        } else if (sitemapLink === '-') {
+            const customLink = `https://${window.location.host}/sitemap_index.xml`;
+            console.log(`Attempting to find sitemap at -> "${customLink}"`);
+            isSitemapLinkFunctional = await validateSitemapLink(customLink);
+            if (isSitemapLinkFunctional === 'Yes') sitemapOrigin = 'External';
+        } else if (sitemapLink === '-') {
+            const customLink = `https://${window.location.host}/sitemap.xml`;
+            console.log(`Attempting to find sitemap at -> "${customLink}"`);
+            isSitemapLinkFunctional = await validateSitemapLink(customLink);
+            if (isSitemapLinkFunctional === 'Yes') sitemapOrigin = 'External';
+        }
+
+        document.body.setAttribute('sitemapLink', sitemapLink);
+        document.body.setAttribute('isSitemapLinkFunctional', isSitemapLinkFunctional);
+        document.body.setAttribute('sitemapOrigin', sitemapOrigin);
     } catch (err) {
         console.log(`Something went wrong while reading robot details/getting sitemap details.`, err);
+    }
+
+    try {
+        const checkGa = () => {
+            if (typeof ga === 'function') {
+                return 'Yes';
+            } else {
+                return 'No';
+            }
+        };
+
+        document.body.setAttribute('isGoogleAnalyticsLoaded', checkGa());
+
+        // Application+LD-JSON Check
+        let isApplicationLdJsonTagPresent = 'No';
+        let schemaType = '-';
+        let schemaMarkupPresent = 'No';
+
+        const isLdJsonPresent = document.evaluate('//script[@type="application/ld+json"]', document).iterateNext();
+        if (isLdJsonPresent) {
+            isApplicationLdJsonTagPresent = 'Yes';
+            schemaType = 'JSON-LD';
+            schemaMarkupPresent = 'Yes';
+        } else {
+            const firstNonHomePageLink = Array.from(document.querySelectorAll('a')).find(a => /^\/.{1,}/g.test(a.getAttribute('href')));
+            const firstNonHomePageLinkUrl = firstNonHomePageLink.href;
+            let isLdJsonPresentInNonHomePagePath = '-';
+            console.log(`Attempting to load => "${firstNonHomePageLinkUrl}" for application+ld.json check`);
+            await fetch(firstNonHomePageLinkUrl).then(res => res.text()).then(async rt => {
+                if (rt.includes('application/ld+json')) {
+                    isLdJsonPresentInNonHomePagePath = 'Yes';
+                    isApplicationLdJsonTagPresent = 'Yes';
+                    schemaType = 'JSON-LD';
+                    schemaMarkupPresent = 'Yes';
+                }
+            });
+            document.body.setAttribute('isLdJsonPresentInNonHomePagePath', isLdJsonPresentInNonHomePagePath);
+        }
+
+        if (isApplicationLdJsonTagPresent === 'No') {
+            const oldLoaderTag = document.evaluate('//*[contains(@itemtype,"https://schema.org/Web")]', document).iterateNext();
+            if (oldLoaderTag) {
+                schemaType = 'Microdata';
+                schemaMarkupPresent = 'Yes';
+            }
+        }
+
+        document.body.setAttribute('isApplicationLdJsonTagPresent', isApplicationLdJsonTagPresent);
+        document.body.setAttribute('schemaType', schemaType);
+        document.body.setAttribute('schemaMarkupPresent', schemaMarkupPresent);
+    } catch (e) {
+        console.log('Check for existance of certain tags in DOM.');
     }
 }
