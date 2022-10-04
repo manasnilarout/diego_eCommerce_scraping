@@ -106,7 +106,7 @@ const doIt = async () => {
         }
     }
 
-    console.log('Errored out indexes are -> ', erroredIndexes.join(','))
+    console.log(`Errored out indexes are -> ${erroredIndexes.join(',')}, total fails -> ${erroredIndexes.length}`);
 };
 
 doIt();
