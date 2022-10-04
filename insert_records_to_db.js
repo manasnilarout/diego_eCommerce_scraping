@@ -41,6 +41,7 @@ const insertRecord = (q, v) => {
 const erroredIndexes = [];
 
 const doIt = async () => {
+    const startTime = new Date().getTime();
     const records = await csv()
         .fromFile(fileName);
     const insertStatement =
@@ -107,6 +108,12 @@ const doIt = async () => {
     }
 
     console.log(`Errored out indexes are -> ${erroredIndexes.join(',')}, total fails -> ${erroredIndexes.length}`);
+
+    con.end(() => {
+        const endTime = new Date().getTime();
+        const totalS = (endTime - startTime) / 1000;
+        console.log(`Ended DB connection, finished in ${totalS} seconds.`);
+    })
 };
 
 doIt();
