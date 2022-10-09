@@ -358,7 +358,7 @@ async function(a) {
             const gotRespFromPreText = htmlLines.find(a => a.includes(gotResponseFromPrerenderString));
             const gotResponseFromPrerenderTime = gotRespFromPreText ? gotRespFromPreText.replace(/.*\[\s{1,}.(\d+)\s{1,}(ms|MS)\s{1,}\].*/, '$1') : '0';
 
-            document.body.setAttribute(`gotResponseFromPrerenderAttempt-${i}`, gotResponseFromPrerenderTime);
+            document.body.setAttribute(`gotResponseFromPrerenderAttempt-${i + 1}`, gotResponseFromPrerenderTime);
             preRenderValuesSum += Number(gotResponseFromPrerenderTime) || 0;
 
             if (Number(gotResponseFromPrerenderTime) && Number(gotResponseFromPrerenderTime) > 5000) {
