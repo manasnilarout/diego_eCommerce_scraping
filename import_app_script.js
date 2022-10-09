@@ -4,7 +4,9 @@ async function(a) {
     // Wait for 5 seconds before proceeding
     await new Promise(resolve => setTimeout(resolve, 5000));
     // Scroll to the bottom of the page before scraping
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+
+    const gotResponseFromPrerenderString = 'Got a response from Prerender';
 
     const appendObjectToDom = (className, value, key, cookie, content) => {
         const d = document.createElement('div');
@@ -71,7 +73,7 @@ async function(a) {
     try {
         const stringToCheck = [{
             key: 'gotResponseFromPrerender',
-            text: 'Got a response from Prerender'
+            text: gotResponseFromPrerenderString
         }, {
             key: 'Governance',
             text: 'The governance null limit was reached'
@@ -341,5 +343,32 @@ async function(a) {
         document.body.setAttribute('schemaMarkupPresent', schemaMarkupPresent);
     } catch (e) {
         console.log('Check for existance of certain tags in DOM.');
+    }
+
+    // Load webpage 3 times for different values
+    try {
+        let preRenderValuesSum = 0;
+        let alertLevelPrerenderValues = [];
+
+        for (let i = 0; i < 3; i++) {
+            const url = window.location.href + Math.ceil((Math.random() * 2)).toString() + i.toString();
+            const response = await fetch(url).then(r => r.text());
+            const htmlLines = response.split('\n');
+
+            const gotRespFromPreText = htmlLines.find(a => a.includes(gotResponseFromPrerenderString));
+            const gotResponseFromPrerenderTime = gotRespFromPreText ? gotRespFromPreText.replace(/.*\[\s{1,}.(\d+)\s{1,}(ms|MS)\s{1,}\].*/, '$1') : '0';
+
+            document.body.setAttribute(`gotResponseFromPrerenderAttempt-${i}`, gotResponseFromPrerenderTime);
+            preRenderValuesSum += Number(gotResponseFromPrerenderTime) || 0;
+
+            if (Number(gotResponseFromPrerenderTime) && Number(gotResponseFromPrerenderTime) > 5000) {
+                alertLevelPrerenderValues.push(gotResponseFromPrerenderTime);
+            }
+        }
+
+        document.body.setAttribute(`gotResponseFromPrerenderAttempt-Average`, preRenderValuesSum / 3);
+        document.body.setAttribute(`gotResponseFromPrerenderAttempt-AlertLevelValues`, alertLevelPrerenderValues.join(';') || '-');
+    } catch (e) {
+        console.log('Loading of a webpage multiple times failed.', e);
     }
 }
