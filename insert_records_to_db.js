@@ -46,8 +46,8 @@ const doIt = async () => {
         .fromFile(fileName);
     const insertStatement =
         `INSERT INTO suitecommerce_scraped_data.websites_data
-        (uri, suitecommerce_tag, prodbundle_id, base_label, version, date_label, build_no, company_id, application_ld_json, div_id_main, div_class_main, cookies, canonical_url, title, seo_generator, got_response_from_pre_render, governance, perftiming, perftiming_sqltime, search_request_details, ssp_app_context, e_commerce_type, sub_request_status, background_requests, console_content, is_cname_mapped, cname_test_url, is_https, screen_capture, url_input, source, is_robots_page_present, is_sitemap_link_present_in_robots_page, sitemap_link, is_sitemap_link_functional, date_scraped, got_response_from_pre_render_time, div_id_footer_tag, no_index_no_follow_tags, sitemap_origin, robots_page_content, is_google_analytics_loaded, is_applicatin_ld_json_present, schema_type, schema_markup_present, is_meta_description_present)
-        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Import', ?, ?, ?, ?, curdate(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
+        (uri, suitecommerce_tag, prodbundle_id, base_label, version, date_label, build_no, company_id, application_ld_json, div_id_main, div_class_main, cookies, canonical_url, title, seo_generator, got_response_from_pre_render, governance, perftiming, perftiming_sqltime, search_request_details, ssp_app_context, e_commerce_type, sub_request_status, background_requests, console_content, is_cname_mapped, cname_test_url, is_https, screen_capture, url_input, source, is_robots_page_present, is_sitemap_link_present_in_robots_page, sitemap_link, is_sitemap_link_functional, date_scraped, got_response_from_pre_render_time, div_id_footer_tag, no_index_no_follow_tags, sitemap_origin, robots_page_content, is_google_analytics_loaded, is_applicatin_ld_json_present, schema_type, schema_markup_present, is_meta_description_present, got_response_from_pre_render_val_1, got_response_from_pre_render_val_2, got_response_from_pre_render_val_3, got_response_from_pre_render_val_average, got_response_from_pre_render_val_alerts)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Import', ?, ?, ?, ?, curdate(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`;
     let counter = 0;
     for (const record of records) {
         const values = [
@@ -94,7 +94,12 @@ const doIt = async () => {
             record.isApplicationLdJsonTagPresent || null,
             record.schemaType || null,
             record.schemaMarkupPresent || null,
-            record.isMetaDescriptionPresent || null
+            record.isMetaDescriptionPresent || null,
+            record['gotResponseFromPrerenderAttempt-1'] || null,
+            record['gotResponseFromPrerenderAttempt-2'] || null,
+            record['gotResponseFromPrerenderAttempt-3'] || null,
+            record['gotResponseFromPrerenderAttempt-Average'] || null,
+            record['gotResponseFromPrerenderAttempt-AlertLevelValues'] || null,
         ];
 
         counter++;
