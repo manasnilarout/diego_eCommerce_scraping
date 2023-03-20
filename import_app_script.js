@@ -371,4 +371,21 @@ async function(a) {
     } catch (e) {
         console.log('Loading of a webpage multiple times failed.', e);
     }
+
+    try {
+        let analyticsType = "unknown";
+        if (typeof(gtag)=="function" && gtag.toString().indexOf('ua-')!=-1) {
+            analyticsType = "Universal Analytics";
+            console.log(`Found analytics - ${analyticsType}`);
+          } else if (typeof(gtag)=="function" && gtag.toString().indexOf('g-')!=-1) {
+            analyticsType = "Google Analytics 4";
+            console.log(`Found analytics - ${analyticsType}`);
+          } else {
+            console.log("Google Analytics not found");
+          }
+
+          document.body.setAttribute("analyticsType", analyticsType);
+    } catch (e) {
+        console.log('Something went wrong while trying to read the analaytics tool values', e);
+    }
 }
