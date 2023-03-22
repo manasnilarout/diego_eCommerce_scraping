@@ -374,18 +374,46 @@ async function(a) {
 
     try {
         let analyticsType = "unknown";
-        if (typeof(gtag)=="function" && gtag.toString().indexOf('ua-')!=-1) {
+        if (typeof (gtag) == "function" && gtag.toString().indexOf('ua-') != -1) {
             analyticsType = "Universal Analytics";
             console.log(`Found analytics - ${analyticsType}`);
-          } else if (typeof(gtag)=="function" && gtag.toString().indexOf('g-')!=-1) {
+        } else if (typeof (gtag) == "function" && gtag.toString().indexOf('g-') != -1) {
             analyticsType = "Google Analytics 4";
             console.log(`Found analytics - ${analyticsType}`);
-          } else {
-            console.log("Google Analytics not found");
-          }
+        } else if (typeof ga !== 'undefined') {
+            analyticsType = "Universal Analytics";
+            console.log(`Found analytics - ${analyticsType}`);
+        } else if (typeof gtag !== 'undefined') {
+            analyticsType = "Google Analytics 4";
+            console.log(`Found analytics - ${analyticsType}`);
+        } else if (document.querySelector('[data-ga-property]')) {
+            analyticsType = "Universal Analytics";
+            console.log(`Found analytics - ${analyticsType}`);
+        } else if (document.querySelector('[data-ga4-property]')) {
+            analyticsType = "Google Analytics 4";
+            console.log(`Found analytics - ${analyticsType}`);
+        } else {
+            try {
+                var requestOptions = {
+                    method: "GET",
+                    redirect: "follow"
+                };
+                const response = await fetch(`https://www.gachecker.com/result.php?domain=${window.location.host}&i=5`, requestOptions)
+                    .then(response => response.text())
+                if (response.count) {
+                    const firstRecord = response.data[0]?.all;
+                    const interestedFields = ["Universal_Analytics", "GTM_GA_Universal_Analytics", "GTM_GA_Classic", "GA", "GTAG_Analytics"];
+                    const matches = firstRecord && firstRecord.filter(fr => interestedFields.includes(fr.name) && fr.value).map(r => r.name);
+                    analyticsType = matches.join(',') || analyticsType;
+                }
+            } catch (er) {
+                console.log(`Something went wrong while making an API call to get the GTAG data.`, e);
+            }
+        }
 
-          document.body.setAttribute("analyticsType", analyticsType);
+        document.body.setAttribute("analyticsType", analyticsType);
     } catch (e) {
         console.log('Something went wrong while trying to read the analaytics tool values', e);
     }
 }
+"http://gachecker.com/csv/datadrivenu.com.csv"
