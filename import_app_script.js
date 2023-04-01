@@ -295,7 +295,7 @@ async function(a) {
 
     try {
         const checkGa = () => {
-            if (typeof ga === 'function') {
+            if (typeof gtag === 'function') {
                 return 'Yes';
             } else {
                 return 'No';
