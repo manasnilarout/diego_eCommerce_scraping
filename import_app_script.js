@@ -295,6 +295,13 @@ async function(a) {
 
     try {
         const checkGa = () => {
+            const sc = document.querySelectorAll("script");
+            const GAScript = Array.from(sc).filter(s => s.getAttribute('src')?.trim().includes('googletagmanager.com') && s.getAttribute('src')?.trim().includes('id=G-'));
+
+            if (GAScript && GAScript.length) {
+                return 'Yes';
+            }
+
             if (typeof gtag === 'function') {
                 return 'Yes';
             } else {
@@ -416,4 +423,3 @@ async function(a) {
         console.log('Something went wrong while trying to read the analaytics tool values', e);
     }
 }
-"http://gachecker.com/csv/datadrivenu.com.csv"
